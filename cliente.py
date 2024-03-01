@@ -17,11 +17,12 @@ Total, Usado, Libre, Ram, Teras = 0,0,0,0,0
 
 #variable para almacenar los totales en formato "totalG|usadoG|libreG"
 totales = ""
+Reportados = 0
 
 #calcula el total sumando los espacios de los servidores disponibles
 def calc_totales(items):
-    global Total, Usado, Libre, Ram, Teras
-    Total, Usado, Libre, Ram, Teras = 0,0,0,0,0
+    global Total, Usado, Libre, Ram, Teras, Reportados
+    Total, Usado, Libre, Ram, Teras, Reportados = 0,0,0,0,0,0
     for x,y in items.items():
         if y != "No disponible":
             tot, us, li, ra, *args = y.split(',')
@@ -30,6 +31,7 @@ def calc_totales(items):
             Libre += float(li)
             Ram += float(ra)
             Teras += 5
+            Reportados += 1
     return f"{Total:.2f}|{Usado:.2f}|{Libre:.2f}|{Ram:.2f}|{Teras}"
 
 #inicia el socket y recibe datos
@@ -64,8 +66,11 @@ def index():
 
     all_data = data_recive
 
+
     #se necesita los departamentos para filtrar en el front posibles servidores no registrados entre los 9
-    global deps
+    global deps, Reportados
+    Reportados = Reportados
+    total_deps = len(all_data)
     deps = deps
 
     #hora actual
@@ -97,6 +102,7 @@ def index():
                     <div class="p-2 mx-2">Ram {{ tots[3] }} GB</div>
                     <div class="p-2 mx-2">Porcentaje {{ (tots[0]|float * 100)/ (tots[4]|float * 1000) if tots[4] != 0 else 0  }} %</div>
                 </div>
+                <div>Reportados {{ Reportados }} de {{ total_deps }}</div>
 
                 <div class="d-flex justify-content-around flex-wrap mt-5">
                     {% for name, data in all_data.items() %}
@@ -129,7 +135,7 @@ def index():
         </body>
         </html>
 
-""", tots=tots, all_data=all_data, deps=deps,hora_actual_cliente=hora_actual_cliente, datetime=datetime)
+""", tots=tots, all_data=all_data, deps=deps,hora_actual_cliente=hora_actual_cliente, datetime=datetime, Reportados=Reportados,total_deps=total_deps)
 
 
 if __name__ == "__main__":
